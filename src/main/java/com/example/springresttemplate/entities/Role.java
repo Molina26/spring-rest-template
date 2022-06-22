@@ -1,20 +1,45 @@
 package com.example.springresttemplate.entities;
 
+import java.util.Set;
+
 import javax.persistence.*;
-
-import com.example.springresttemplate.enums.ERole;
-
-import lombok.Data;
 
 @Entity
 @Table(name = "roles")
-@Data
 public class Role {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @Enumerated(EnumType.STRING)
   @Column(length = 30)
-  private ERole name;
+  private String name;
+
+  @ManyToMany(mappedBy = "roles")
+  private Set<UserApp> users;
+
+
+  public Integer getId() {
+    return this.id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public String getName() {
+    return this.name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public Set<UserApp> getUsers() {
+    return this.users;
+  }
+
+  public void setUsers(Set<UserApp> users) {
+    this.users = users;
+  }
+
 }
