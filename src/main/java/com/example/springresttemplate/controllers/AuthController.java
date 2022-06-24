@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.springresttemplate.entities.Role;
 import com.example.springresttemplate.entities.UserApp;
+import com.example.springresttemplate.exceptions.AppCustomException;
 import com.example.springresttemplate.payload.acount.request.UserSinginRequestDto;
 import com.example.springresttemplate.payload.acount.request.UserSingupRequestDto;
 import com.example.springresttemplate.payload.acount.response.SinginSuccessResponseDto;
@@ -67,6 +68,17 @@ public class AuthController {
     String jwt = jwtUtils.generateJwtToken(authentication);
 
     UserApp userDetails = userAppServiceImpl.findUserByUsername(authentication.getName());
+
+    if (!userDetails.isIsAvailable()) {
+      logger.error("user isn't available");
+      throw new AppCustomException("authentication","El usuario esta inhabilitado");
+    }
+
+    if (userDetails.getRoles().isEmpty()) {
+      logger.error("user haven´t roles");
+      throw new AppCustomException("authentication","El usuario no tiene un rol asignado");
+    }
+
     List<String> roles = userDetails.getRoles().stream().map(item -> item.getName()).collect(Collectors.toList());
 
     return ResponseEntity.ok(new SinginSuccessResponseDto(jwt,
