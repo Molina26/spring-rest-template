@@ -46,7 +46,7 @@ public class WebSecurityConfig {
     return new AuthTokenFilter();
   }
 
-  @Bean 
+  @Bean
   public AccessDeniedPersonalHandler accessDeniedPersonalHandler() {
     return new AccessDeniedPersonalHandler();
   }
@@ -55,12 +55,14 @@ public class WebSecurityConfig {
   @Order(1)
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.cors().and().csrf().disable();
-    
+
     http.exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
         .authorizeRequests()
-        .antMatchers("/api/auth/**").permitAll()
-        .antMatchers("/api/test/password").permitAll()
+        .antMatchers("/api/example/auth/signin",
+            "/api/example/auth/signup",
+            "/api/example/test/password")
+        .permitAll()
         .anyRequest().authenticated().and()
         .httpBasic();
 
