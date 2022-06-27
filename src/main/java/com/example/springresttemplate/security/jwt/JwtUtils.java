@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import com.example.springresttemplate.entities.UserApp;
 import com.example.springresttemplate.security.config.SecurityConstants;
 import com.example.springresttemplate.services.UserAppServiceImpl;
-import com.example.springresttemplate.services.UserDetailsImpl;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.TextCodec;
