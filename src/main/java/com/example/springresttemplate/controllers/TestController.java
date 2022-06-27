@@ -13,18 +13,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/test")
+@RequestMapping("/api/example/test")
 public class TestController {
-  
+
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-  public TestController (BCryptPasswordEncoder encoder) {
+  public TestController(BCryptPasswordEncoder encoder) {
     this.bCryptPasswordEncoder = encoder;
-  }
-
-  @GetMapping("/not-auth")
-  public String test() {
-    return "Hello by the test !!";
   }
 
   @GetMapping("/all")
@@ -51,13 +46,12 @@ public class TestController {
     Map<String, String> passwords = new HashMap<>();
 
     for (int i = 0; i < 3; i++) {
-      String key = UUID.randomUUID().toString().substring(0,5);
+      String key = UUID.randomUUID().toString().substring(0, 5);
       String keyEncoder = bCryptPasswordEncoder.encode(key);
       passwords.put(key, keyEncoder);
     }
 
     return new ResponseEntity<>(passwords, HttpStatus.OK);
   }
-
 
 }
