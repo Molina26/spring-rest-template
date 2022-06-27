@@ -1,5 +1,7 @@
 package com.example.springresttemplate.services;
 
+import java.util.Optional;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -10,6 +12,8 @@ public interface UserAppService extends UserDetailsService{
   UserDetails loadUserByUsername(String username);
 
   UserApp findUserByUsername(String username);
+
+  Optional<UserApp> findUserByEmail(String email);
 
   UserApp createUser(UserSingupRequestDto userDto);
 }

@@ -1,10 +1,15 @@
 package com.example.springresttemplate.services;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -12,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.springresttemplate.entities.Role;
 import com.example.springresttemplate.entities.UserApp;
 import com.example.springresttemplate.payload.acount.request.UserSingupRequestDto;
 import com.example.springresttemplate.repositories.UserAppRepository;
@@ -20,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserAppServiceImpl implements UserAppService{
+public class UserAppServiceImpl implements UserAppService {
 
   private final Logger logger = LoggerFactory.getLogger(UserAppServiceImpl.class);
 
@@ -31,72 +37,50 @@ public class UserAppServiceImpl implements UserAppService{
   @Override
   @Transactional(readOnly = true)
   public UserDetails loadUserByUsername(String username) {
-    
+
     Optional<UserApp> user = userAppRepository.findByUsername(username);
 
     if (user.isEmpty()) {
       throw new UsernameNotFoundException(username);
     }
 
-    UserApp userToAuthenticate = user.get(); 
+    UserApp userToAuthenticate = user.get();
 
     return new User(userToAuthenticate.getUsername(), userToAuthenticate.getPassword(), new ArrayList<>());
   }
 
   @Override
   public UserApp createUser(UserSingupRequestDto userDto) {
-    
-    // if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-    //   return ResponseEntity
-    //       .badRequest()
-    //       .body(new MessageResponse("Error: Username is already taken!"));
-    // }
 
-    // if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-    //   return ResponseEntity
-    //       .badRequest()
-    //       .body(new MessageResponse("Error: Email is already in use!"));
-    // }
+    UserApp userCreated = null;
 
-    // Create new user's account
-    // UserApp user = new User(signUpRequest.getUsername(), 
-              //  signUpRequest.getEmail(),
-              //  encoder.encode(signUpRequest.getPassword()));
+    try {
+      UserApp user = new UserApp();
 
-    // Set<String> strRoles = signUpRequest.getRole();
-    // Set<Role> roles = new HashSet<>();
+      BeanUtils.copyProperties(userDto, user);
+      user.setIsAvailable(true);
 
-    // if (strRoles == null) {
-    //   Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-    //       .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-    //   roles.add(userRole);
-    // } else {
-    //   // Define the roles according your uses cases 
-    //   strRoles.forEach(role -> {
-    //     switch (role) {
-    //     case "super":
-    //       Role adminRole = roleRepository.findByName(ERole.ROLE_SUPER)
-    //           .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-    //       roles.add(adminRole);
+      Set<Role> roles = new HashSet<>();
 
-    //       break;
-    //     case "user":
-    //       Role modRole = roleRepository.findByName(ERole.ROLE_USER)
-    //           .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-    //       roles.add(modRole);
-    //       break;
-    //     default:
-    //       Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-    //           .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-    //       roles.add(userRole);
-    //     }
-    //   });
-    // }
+      userDto.getRoles().forEach(item -> {
+        Role role = new Role();
+        role.setId(item);
+        roles.add(role);
+      });
 
-    // user.setRoles(roles);
-    // userRepository.save(user);  
+      String passwordHashed = encoder.encode(user.getPassword());
 
-    return null;
+      user.setPassword(passwordHashed);
+
+      user.setRoles(roles);
+
+      userCreated = userAppRepository.save(user);
+
+    } catch (Exception e) {
+      logger.error("error to create a new user" + e.getMessage());
+    }
+
+    return userCreated;
   }
 
   @Override
@@ -104,14 +88,24 @@ public class UserAppServiceImpl implements UserAppService{
   public UserApp findUserByUsername(String username) {
     try {
       Optional<UserApp> user = userAppRepository.findByUsername(username);
-    
+
       if (user.isPresent()) {
         return user.get();
-      }      
+      }
     } catch (Exception e) {
-      logger.error("error to find user by username "+ e.getMessage());
+      logger.error("error to find user by username " + e.getMessage());
     }
-    
+
     return null;
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<UserApp> findUserByEmail(String email) {
+    return userAppRepository.findByEmail(email);
+  }
+
+  public List<String> convertSetRolesToList(Set<Role> roles) {
+    return roles.stream().map(item -> item.getName()).collect(Collectors.toList());
   }
 }
